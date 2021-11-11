@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/uga-rosa/monkey/internal/evaluator"
 	"github.com/uga-rosa/monkey/internal/lexer"
 	"github.com/uga-rosa/monkey/internal/parser"
 )
@@ -31,7 +32,10 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String()+"\n")
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect()+"\n")
+		}
 	}
 }
 
