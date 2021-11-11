@@ -121,6 +121,7 @@ func (i *Identifier) String() string {
 	return i.Value
 }
 
+// 数値
 type IntegerLiteral struct {
 	Token token.Token
 	Value int64
@@ -131,7 +132,7 @@ func (il *IntegerLiteral) TokenLiteral() string {
 	return il.Token.Literal
 }
 func (il *IntegerLiteral) String() string {
-	return il.TokenLiteral()
+	return il.Token.Literal
 }
 
 type PrefixExpression struct {
@@ -153,4 +154,41 @@ func (pe *PrefixExpression) String() string {
 	out.WriteString(")")
 
 	return out.String()
+}
+
+type InfixExpression struct {
+	Token    token.Token // 中置トークン
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (ie *InfixExpression) expressionNode() {}
+func (ie *InfixExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+func (ie *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+// 真偽値
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expressionNode() {}
+func (b *Boolean) TokenLiteral() string {
+	return b.Token.Literal
+}
+func (b *Boolean) String() string {
+	return b.Token.Literal
 }
