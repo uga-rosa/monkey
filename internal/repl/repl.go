@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/uga-rosa/monkey/internal/lexer"
-	"github.com/uga-rosa/monkey/internal/token"
+	"github.com/uga-rosa/monkey/internal/parser"
 )
 
 const PROMPT = ">> "
@@ -14,14 +14,30 @@ const PROMPT = ">> "
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
-	for scanner.Scan() {
+	for {
 		fmt.Fprint(out, PROMPT)
+		scanned := scanner.Scan()
+		if !scanned {
+			return
+		}
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
+		program := p.ParseProgram()
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Fprintf(out, "%+v\n", tok)
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
 		}
+
+		io.WriteString(out, program.String()+"\n")
+	}
+}
+
+func printParserErrors(out io.Writer, errors []string) {
+	io.WriteString(out, "parser errors:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
