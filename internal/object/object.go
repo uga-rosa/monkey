@@ -13,10 +13,12 @@ type ObjectType string
 const (
 	IntegerObj     = "Integer"
 	BooleanObj     = "Boolean"
+	StringObj      = "STRING"
 	NullObj        = "Null"
 	ReturnValueObj = "ReturnValue"
 	ErrorObj       = "Error"
 	FunctionObj    = "FUNCTION"
+	BuiltinObj     = "BUILTIN"
 )
 
 type Object interface {
@@ -44,6 +46,17 @@ func (b *Boolean) Type() ObjectType {
 }
 func (b *Boolean) Inspect() string {
 	return fmt.Sprintf("%t", b.Value)
+}
+
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType {
+	return StringObj
+}
+func (s *String) Inspect() string {
+	return s.Value
 }
 
 type Null struct{}
@@ -102,4 +115,17 @@ func (f *Function) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+type BuiltinFunction func(args ...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType {
+	return BuiltinObj
+}
+func (b *Builtin) Inspect() string {
+	return "builtin function"
 }
