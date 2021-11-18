@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"strings"
 
 	"github.com/uga-rosa/monkey/internal/ast"
@@ -17,9 +18,10 @@ const (
 	NullObj        = "Null"
 	ReturnValueObj = "ReturnValue"
 	ErrorObj       = "Error"
-	FunctionObj    = "FUNCTION"
-	BuiltinObj     = "BUILTIN"
-	ArrayObj       = "ARRAY"
+	FunctionObj    = "Function"
+	BuiltinObj     = "Builtin"
+	ArrayObj       = "Array"
+	HashObj        = "Hash"
 )
 
 type Object interface {
@@ -151,4 +153,62 @@ func (a *Array) Inspect() string {
 	out.WriteString("]")
 
 	return out.String()
+}
+
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
+}
+
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1 // true
+	} else {
+		value = 0 // false
+	}
+
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
+}
+
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+func (h *Hash) Type() ObjectType {
+	return HashObj
+}
+func (h *Hash) Inspect() string {
+	var out bytes.Buffer
+
+	pairs := []string{}
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+
+	return out.String()
+}
+
+type Hashable interface {
+	HashKey() HashKey
 }

@@ -33,6 +33,7 @@ const (
 	// デミリタ
 	COMMA     = ","
 	SEMICOLON = ";"
+	COLON     = ":"
 
 	LPAREN   = "("
 	RPAREN   = ")"
